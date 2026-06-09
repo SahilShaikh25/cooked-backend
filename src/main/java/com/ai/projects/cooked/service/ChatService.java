@@ -9,6 +9,10 @@ import org.springframework.web.client.RestClient;
 import com.ai.projects.cooked.model.ChatBody;
 import com.ai.projects.cooked.model.ChatResponse;
 import com.ai.projects.cooked.model.MessageBody;
+import com.ai.projects.cooked.model.geminidto.request.GeminiContent;
+import com.ai.projects.cooked.model.geminidto.request.GeminiPart;
+import com.ai.projects.cooked.model.geminidto.request.GeminiRequest;
+import com.ai.projects.cooked.model.geminidto.response.GeminiResponse;
 
 @Service
 public class ChatService {
@@ -21,22 +25,28 @@ public class ChatService {
 	public String getResponse(String profileText, String roastLevel) {
 		
 		String prompt = getRoastPrompt(profileText, roastLevel);
-		
-		ChatBody chatBody = new ChatBody(prompt, "user");
-		MessageBody messageBody = new MessageBody(List.of(chatBody));
 
-		ChatResponse response = restClient.post()
-							.uri("/chat/completions")
-							.contentType(MediaType.APPLICATION_JSON)
-							.body(messageBody)
-							.retrieve()
-							.body(ChatResponse.class);
-		
-		return response
-				.getChoices()
-				.get(0)
-				.getMessage()
-				.getContent();
+		try {
+			
+			return callGemini(prompt, "gemini-3.5-flash");
+			
+		}catch (Exception e) {
+			
+			System.out.println("Initial connection failed. Re-connecting....");
+			
+			try {
+			
+				return callGemini(prompt, "gemini-3.1-flash-lite");
+			
+			}catch (Exception ex) {
+				
+				throw new RuntimeException(
+						"Third Party Service Not Available. Please try again later...."
+				);
+				
+			}
+			
+		}
 	}
 	
 	private String getRoastPrompt(String profileText, String roastLevel) {
@@ -84,5 +94,42 @@ public class ChatService {
 	        );
 		}
 		
+	}
+	
+	private String callGemini(
+	        String prompt,
+	        String model) {
+
+	    GeminiRequest request =
+	            new GeminiRequest(
+	                    List.of(
+	                            new GeminiContent(
+	                                    List.of(
+	                                            new GeminiPart(prompt)
+	                                    )
+	                            )
+	                    )
+	            );
+
+	    GeminiResponse response =
+	            restClient.post()
+	                    .uri(
+	                            "/v1beta/models/"
+	                                    + model
+	                                    + ":generateContent"
+	                    )
+	                    .contentType(
+	                            MediaType.APPLICATION_JSON
+	                    )
+	                    .body(request)
+	                    .retrieve()
+	                    .body(GeminiResponse.class);
+
+	    return response.candidates()
+	            .get(0)
+	            .content()
+	            .parts()
+	            .get(0)
+	            .text();
 	}
 }

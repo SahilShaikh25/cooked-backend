@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ai.projects.cooked.service.ChatService;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://cooked-io.netlify.app/")
 @RequestMapping("/chat")
 public class Controller {
 	

@@ -19,7 +19,8 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:5173",
-                                "https://cooked.netlify.app"
+                                "https://cooked-io.netlify.app"
+
                         )
                         .allowedMethods("*");
             }

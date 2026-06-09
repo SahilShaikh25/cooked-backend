@@ -1,5 +1,6 @@
 package com.ai.projects.cooked;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -13,9 +14,13 @@ public class CookedApplication {
 	}
 	
 	@Bean
-	public RestClient getClient() {
+	public RestClient getClient(
+			@Value("${gemini.base.url}") String baseUrl,
+			@Value("${gemini.api.key}") String apiKey) 
+	{
 		return RestClient.builder()
-			.baseUrl("https://hermes.ai.unturf.com/v1")
+			.baseUrl(baseUrl)
+			.defaultHeader("x-goog-api-key", apiKey)
 			.build();
 			
 	}

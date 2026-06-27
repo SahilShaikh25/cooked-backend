@@ -39,7 +39,7 @@ public class ChatService {
 				return callGemini(prompt, "gemini-3.1-flash-lite");
 			
 			}catch (Exception ex) {
-				
+				ex.printStackTrace();
 				throw new RuntimeException(
 						"Third Party Service Not Available. Please try again later...."
 				);
